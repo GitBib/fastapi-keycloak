@@ -137,6 +137,7 @@ class FastAPIKeycloak:
             callback_uri: str,
             admin_client_id: str = "admin-cli",
             timeout: int = 10,
+            realm_management: str = "realm-management",
     ):
         """FastAPIKeycloak constructor
 
@@ -150,6 +151,7 @@ class FastAPIKeycloak:
             callback_uri (str): Callback URL of the instance, used for auth flows. Must match at least one
             `Valid Redirect URIs` of Keycloak and should point to an endpoint that utilizes the authorization_code flow.
             timeout (int): Timeout in seconds to wait for the server
+            realm_management (str): Custom realm management
         """
         self.server_url = server_url
         self.realm = realm
@@ -159,6 +161,7 @@ class FastAPIKeycloak:
         self.admin_client_secret = admin_client_secret
         self.callback_uri = callback_uri
         self.timeout = timeout
+        self.realm_management = realm_management
         self._get_admin_token()  # Requests an admin access token on startup
 
     @property
@@ -188,7 +191,7 @@ class FastAPIKeycloak:
         """
         decoded_token = self._decode_token(token=value)
         if not decoded_token.get("resource_access").get(
-                "realm-management"
+                self.realm_management
         ) or not decoded_token.get("resource_access").get("account"):
             raise AssertionError(
                 """The access required was not contained in the access token for the `admin-cli`.
